@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Threading;
+using WindowsDesktop;
 
 namespace VirtualDesktopNotificationSample
 {
@@ -23,6 +14,24 @@ namespace VirtualDesktopNotificationSample
         public MainWindow()
         {
             InitializeComponent();
+            VirtualDesktop.CurrentChanged += VirtualDesktop_CurrentChanged;
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+            VirtualDesktop.CurrentChanged -= VirtualDesktop_CurrentChanged;
+        }
+
+        private void VirtualDesktop_CurrentChanged(object sender, VirtualDesktopChangedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+            {
+                // Update Text by Current Desktop GUID
+                EventMessage.Text = e.NewDesktop.Id.ToString();
+                // Move my window to current virtual desktop
+                this.MoveToDesktop(e.NewDesktop);
+            }));
         }
     }
 }
